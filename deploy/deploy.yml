@@ -1,0 +1,34 @@
+---
+- hosts: local
+- name: load ssh key
+  shell: |
+    ssh-add github
+
+- hosts: dev
+  vars:
+    project_path: /dpv
+  tasks:
+    - name: Clone the repository
+      git:
+        repo: "https://{{git_user|urlencode()}}:{{git_pass|urlencode()}}@gitlab.teltonika.lt:dpv-backend/server.git"
+        dest: "/"
+    - name: Install packages
+      command: cd dummy-device && npm ci && cd ../
+       && cd backend && npm ci && cd ../
+       && cd frontend && npm ci && cd ../
+      ignore_errors: yes
+    - name: Start dummy devices
+      command: cd dummy-device && npm run start
+      ignore_errors: yes
+    - name: Install docker-compose from official github repo
+      remote_user: ansible_ubuntu_demo
+      get_url:
+        url: https://github.com/docker/compose/releases/download/2.5.0/docker-compose-Linux-x86_64
+        dest: /docker-compose
+        mode: 'u+x,g+x'
+    - name: Start backend
+      command: cd backend && sudo docker-compose --env-file .env.dev up -d && npm run migration:run && npm run start
+      ignore_errors: yes
+    - name: Start frontend
+      command: cd frontend && npm run start
+      ignore_errors: yes

@@ -2,4 +2,4 @@
 local_machine ansible_connection=local ansible_host=localhost
 
 [dev]
-ec2-3-73-39-64.eu-central-1.compute.amazonaws.com ansible_user=ubuntu
+ec2-52-29-160-194.eu-central-1.compute.amazonaws.com ansible_user=ubuntu
